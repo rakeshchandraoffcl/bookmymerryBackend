@@ -3,7 +3,7 @@
 function send_text($number, $message)
 {
      $message = urlencode($message);
-     $url = 'http://api.smscountry.com/SMSCwebservice_bulk.aspx?User=homesearch&Passwd=lvadda@413&Sid=GROVIS&Mobilenumber=' . $number . '&message=' . $message . '&Mtype=N&DR=Y';
+     $url = 'https://api.smscountry.com/SMSCwebservice_bulk.aspx?User=homesearch&Passwd=lvadda@413&Sid=GROVIS&Mobilenumber=' . $number . '&message=' . $message . '&Mtype=N&DR=Y';
      //step1
      $cSession = curl_init();
      //step2

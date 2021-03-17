@@ -87,6 +87,65 @@ class Resources extends DB
             }
         }
     }
+
+    function getActiveVenues()
+    {
+        $venues = [];
+        $query = 'SELECT id,name FROM venue WHERE status = 1';
+        $stmt = $this->conn->prepare($query);
+        if (
+            $stmt &&
+            $stmt->execute() &&
+            $stmt->store_result() &&
+            $stmt->bind_result($id, $name)
+
+        ) {
+            while ($stmt->fetch()) {
+                array_push($venues, array("id" => $id, "name" => $name));
+            }
+
+            return array("status" => "success", "data" => $venues);
+        } else {
+            if ($this->conn->error) {
+                return array("status" => "fail", "error" => $this->conn->error);
+            }
+            if ($stmt->error) {
+                return array("status" => "fail", "error" => $stmt->error);
+            }
+        }
+    }
+    function getTimeSlotsOfVenue($id)
+    {
+        $venues = [];
+        $query = 'SELECT t.id,t.slot,t.slot_name FROM  venue_time_slot vt INNER JOIN time_slot t ON vt.slot=t.id WHERE vt.venue = ' . $id . ' AND t.status=1';
+        $stmt = $this->conn->prepare($query);
+        if (
+            $stmt &&
+            $stmt->execute() &&
+            $stmt->store_result() &&
+            $stmt->bind_result($id, $slot, $slot_name)
+
+        ) {
+            while ($stmt->fetch()) {
+                array_push($venues, array("id" => $id, "slot" => $slot, "slot_name" => $slot_name));
+            }
+
+            return array("status" => "success", "data" => $venues);
+        } else {
+            if ($this->conn->error) {
+                return array("status" => "fail", "error" => $this->conn->error);
+            }
+            if ($stmt->error) {
+                return array("status" => "fail", "error" => $stmt->error);
+            }
+        }
+    }
+
+
+
+
+
+
     function getVendorTypes()
     {
 

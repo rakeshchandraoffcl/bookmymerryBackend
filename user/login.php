@@ -12,6 +12,9 @@ $validator->validate_json_body($data, 'password');
 $user = new User();
 $userDetails = $user->getDetailsByEmail($data['email']);
 throw_error_if_any($userDetails, 'Incorrect email or password');
+if ($userDetails['data']['status'] !== 1) {
+    send_response('fail', 'Your account is not active', 401);
+}
 if ($data['password'] === $userDetails['data']['password']) {
     query_response($user->getDetailsById($userDetails['data']['id']));
 } else {

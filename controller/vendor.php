@@ -50,6 +50,26 @@ class Vendor extends DB
         }
     }
 
+    function updateView($id)
+    {
+        $query = 'UPDATE ' . $this->table . ' SET view = view + 1 WHERE id=' . $id;
+        $stmt = $this->conn->prepare($query);
+        if (
+            $stmt &&
+            $stmt->execute() &&
+            ($stmt->affected_rows === 1)
+        ) {
+            return array("status" => "success", "data" => $id);
+        } else {
+            if ($this->conn->error) {
+                return array("status" => "fail", "error" => $this->conn->error);
+            }
+            if ($stmt->error) {
+                return array("status" => "fail", "error" => $stmt->error);
+            }
+        }
+    }
+
     function createVendorWithBasicDetails($data)
     {
         $query = 'INSERT INTO ' . $this->table . ' SET ';
@@ -206,6 +226,8 @@ class Vendor extends DB
         ) {
             while ($stmt->fetch()) {
                 $images = $this->getImages($id)['data'];
+                $packages = $this->getPackages($id)['data'];
+                $rating = $this->getVendorRatings($id);
                 array_push($cities, array(
                     "id" => $id,
                     "name" => $name,
@@ -224,7 +246,9 @@ class Vendor extends DB
                     "view" => $view,
                     "created_at" => $created_at,
                     "images" => $images,
-                    "status" => $status
+                    "status" => $status,
+                    "packages" => $packages,
+                    "rating" => $rating,
                 ));
             }
 
@@ -330,7 +354,7 @@ class Vendor extends DB
                     $details["packages"] = $packages;
                     $details["city_id"] = $city;
                     $details["type_id"] = $type;
-                    $details["rating"] = $this->getVendorRatings($id)['data'];
+                    $details["rating"] = $this->getVendorRatings($id);
                     return array("status" => "success", "data" => $details);
                 } else {
                     if ($stmt->error) {
@@ -351,28 +375,7 @@ class Vendor extends DB
     }
 
 
-    function getVendorRatings($id)
-    {
-        $query = 'SELECT ROUND(AVG(rating),1) as rating from vendor_rating WHERE vendor=' . $id . ' AND status=1';
-        $stmt = $this->conn->prepare($query);
-        if (
-            $stmt &&
-            $stmt->execute() &&
-            $stmt->store_result() &&
-            $stmt->bind_result($rating) &&
-            $stmt->fetch()
 
-        ) {
-            return array("status" => "success", "data" => $rating);
-        } else {
-            if ($this->conn->error) {
-                return array("status" => "fail", "error" => $this->conn->error);
-            }
-            if ($stmt->error) {
-                return array("status" => "fail", "error" => $stmt->error);
-            }
-        }
-    }
 
 
 
@@ -597,25 +600,7 @@ class Vendor extends DB
         return $totalDocs;
     }
 
-    function updateView($id)
-    {
-        $query = 'UPDATE ' . $this->table . ' SET view = view + 1 WHERE id=' . $id;
-        $stmt = $this->conn->prepare($query);
-        if (
-            $stmt &&
-            $stmt->execute() &&
-            ($stmt->affected_rows === 1)
-        ) {
-            return array("status" => "success", "data" => $id);
-        } else {
-            if ($this->conn->error) {
-                return array("status" => "fail", "error" => $this->conn->error);
-            }
-            if ($stmt->error) {
-                return array("status" => "fail", "error" => $stmt->error);
-            }
-        }
-    }
+
 
     function updateVendor($data, $id)
     {
@@ -644,6 +629,31 @@ class Vendor extends DB
         ) {
             $user_details = $this->getVendorDetails($id);
             return array("status" => "success", "data" => $user_details['data']);
+        } else {
+            if ($this->conn->error) {
+                return array("status" => "fail", "error" => $this->conn->error);
+            }
+            if ($stmt->error) {
+                return array("status" => "fail", "error" => $stmt->error);
+            }
+        }
+    }
+
+    function getVendorRatings($venueId)
+    {
+        $query = 'SELECT ROUND(AVG(rating),1) as avg_rating,COUNT(*) as rating_count FROM vendor_rating WHERE status=1 AND verified = 1 AND vendor=' . $venueId;
+        $stmt = $this->conn->prepare($query);
+        if (
+            $stmt &&
+            $stmt->execute() &&
+            $stmt->store_result() &&
+            $stmt->bind_result($avg_rating, $rating_count) &&
+            $stmt->fetch()
+
+        ) {
+
+
+            return array("rating" => $avg_rating, "count" => $rating_count);
         } else {
             if ($this->conn->error) {
                 return array("status" => "fail", "error" => $this->conn->error);

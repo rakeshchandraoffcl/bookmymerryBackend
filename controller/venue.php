@@ -1107,4 +1107,37 @@ class Venue extends DB
             }
         }
     }
+
+    function checkAvailableTimeSlots($id, $date)
+    {
+        $timeSlots = [];
+        $query = "SELECT ts.id,ts.slot,ts.slot_name FROM venue_time_slot vt INNER JOIN time_slot ts ON vt.slot=ts.id WHERE vt.venue =" . $id . " AND vt.slot NOT IN (SELECT time_slot  FROM venue_booking WHERE venue=" . $id . " AND date='" . $date . "')";
+
+        // echo $query;
+        $stmt = $this->conn->prepare($query);
+        if (
+            $stmt &&
+            $stmt->execute() &&
+            $stmt->store_result() &&
+            $stmt->bind_result($id, $slot, $slot_name)
+
+        ) {
+            while ($stmt->fetch()) {
+                array_push($timeSlots, array(
+                    "id" => $id,
+                    "slot" => $slot,
+                    "slot_name" => $slot_name,
+                ));
+            }
+
+            return array("status" => "success", "data" => $timeSlots);
+        } else {
+            if ($this->conn->error) {
+                return array("status" => "fail", "error" => $this->conn->error);
+            }
+            if ($stmt->error) {
+                return array("status" => "fail", "error" => $stmt->error);
+            }
+        }
+    }
 }
