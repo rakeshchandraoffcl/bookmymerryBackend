@@ -278,6 +278,8 @@ class Vendor extends DB
         ) {
             while ($stmt->fetch()) {
                 $images = $this->getImages($id)['data'];
+                $rating = $this->getVendorRatings($id);
+                $packages = $this->getPackages($id)['data'];
                 array_push($cities, array(
                     "id" => $id,
                     "name" => $name,
@@ -296,6 +298,8 @@ class Vendor extends DB
                     "created_at" => $created_at,
                     "images" => $images,
                     "status" => $status,
+                    "rating" => $rating,
+                    "packages" => $packages,
                 ));
             }
 
